@@ -10,6 +10,7 @@ if "%dir%"=="" set "dir=%CD%"
 if not exist "%dir%\" set "dir=%CD%"
 set "dir=%dir%\"
 shift
+
 set /p input="Quality for all PNGs (80/lossless)? "
 set mode=80
 if /i "%input%"=="lossless" set mode=lossless
@@ -18,19 +19,24 @@ set count=0
 set success=0
 :loop
 if "%~1"=="" goto endloop
-if /i not "%~x1"==".png" (shift & goto loop)
 set /a count+=1
 set "file=%~1"
 set "name=%~n1"
 set "outfile=%dir%!name!.webp"
+echo Converting: !name!
 if /i "%mode%"=="lossless" (
   cwebp -lossless "!file!" -o "!outfile!"
 ) else (
   cwebp -q %mode% "!file!" -o "!outfile!"
 )
-if exist "!outfile!" (set /a success+=1)
+if exist "!outfile!" (
+  set /a success+=1
+  echo SUCCESS: !name!.webp
+) else (
+  echo FAILED: !name! (unsupported or error)
+)
 shift
 goto loop
 :endloop
-echo Processed %count% PNGs, %success% successful WebPs in %dir%
+echo Processed %count% files, %success% WebPs in %dir%
 pause
